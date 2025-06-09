@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "ZHHStaticTableViewCell.h"
 #import "ZHHStaticTableviewCellViewModel.h"
-#import "ZHHStaticTableviewSectionViewModel.h"
+#import "ZHHStaticTableViewSectionViewModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

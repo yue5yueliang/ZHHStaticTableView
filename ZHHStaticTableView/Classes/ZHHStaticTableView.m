@@ -9,7 +9,7 @@
 #import "ZHHStaticTableView.h"
 #import "ZHHStaticTableViewCell.h"
 #import "ZHHStaticTableviewCellViewModel.h"
-#import "ZHHStaticTableviewSectionViewModel.h"
+#import "ZHHStaticTableViewSectionViewModel.h"
 
 @implementation ZHHStaticTableView
 

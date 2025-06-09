@@ -7,7 +7,6 @@
 //
 
 #import "ZHHStaticTableViewSectionViewModel.h"
-#import "ZHHStaticTableviewCellViewModel.h"
 
 @implementation ZHHStaticTableViewSectionViewModel
 
