@@ -1,0 +1,20 @@
+use_frameworks!
+
+##忽略.cocoapods中多个specs源引起的警告问题
+install! 'cocoapods', :warn_for_unused_master_specs_repo => false
+
+platform :ios, '13.0'
+
+target 'ZHHStaticTableView_Example' do
+  pod 'ZHHStaticTableView', :path => '../'
+  
+  pod 'ZHHAnneKit'  # 自定义开发的工具库（常见功能封装）
+  pod 'ZHHRootNavigationController'  # 基于 UINavigationController，支持全局手势返回和导航管理
+  pod 'LookinServer', :configurations => ['Debug']  # 自定义的服务器配置（仅在 Debug 模式下使用）
+
+  target 'ZHHStaticTableView_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
