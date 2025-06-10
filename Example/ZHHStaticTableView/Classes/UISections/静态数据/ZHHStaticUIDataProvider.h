@@ -1,8 +1,8 @@
 //
 //  ZHHStaticUIDataProvider.h
-//  RanYuApp
+//  ZHHStaticTableView
 //
-//  Created by Ranyu222 on 2025/4/8.
+//  Created by 桃色三岁 on 2025/4/8.
 //  Copyright © 2025 桃色三岁. All rights reserved.
 //
 

@@ -1,6 +1,6 @@
 //
 //  ZHHCustomAvatarTableViewCell.h
-//  RanYuApp
+//  ZHHStaticTableView
 //
 //  Created by 桃色三岁 on 2025/3/27.
 //  Copyright © 2025 桃色三岁. All rights reserved.
