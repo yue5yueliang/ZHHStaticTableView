@@ -9,6 +9,7 @@
 #import "ZHHExampleCustomTableViewCell.h"
 
 @interface ZHHExampleCustomTableViewCell ()
+@property (nonatomic, assign) BOOL didSetupViews;
 @property (nonatomic, strong) UILabel *titleLabel;
 @property (nonatomic, strong) UILabel *subtitleLabel;
 @property (nonatomic, strong) UIImageView *arrowImageView;
@@ -18,36 +19,45 @@
 
 - (void)configureCustomTableViewCellWithViewModel:(ZHHStaticTableviewCellViewModel*)viewModel {
     self.viewModel = viewModel;
+    if (!self.didSetupViews) {
+        self.didSetupViews = YES;
 
-    // 添加子视图
-    [self.contentView addSubview:self.titleLabel];
-    [self.contentView addSubview:self.subtitleLabel];
-    [self.contentView addSubview:self.arrowImageView];
-    
-    // 关闭 autoresizing，启用 Auto Layout
-    self.titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.arrowImageView.translatesAutoresizingMaskIntoConstraints = NO;
-    
-    // 设置 Auto Layout 约束
-    [NSLayoutConstraint activateConstraints:@[
-        // titleLabel: 顶部 + 左对齐
-        [self.titleLabel.topAnchor constraintEqualToAnchor:self.topAnchor constant:12],
-        [self.titleLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:16],
-        [self.titleLabel.trailingAnchor constraintLessThanOrEqualToAnchor:self.trailingAnchor constant:-60],
+        // 添加子视图
+        [self.contentView addSubview:self.titleLabel];
+        [self.contentView addSubview:self.subtitleLabel];
+        [self.contentView addSubview:self.arrowImageView];
 
-        // subtitleLabel: titleLabel 下方 + 左对齐
-        [self.subtitleLabel.topAnchor constraintEqualToAnchor:self.titleLabel.bottomAnchor constant:4],
-        [self.subtitleLabel.leadingAnchor constraintEqualToAnchor:self.titleLabel.leadingAnchor],
-        [self.subtitleLabel.trailingAnchor constraintLessThanOrEqualToAnchor:self.arrowImageView.leadingAnchor constant:-8],
-        [self.subtitleLabel.bottomAnchor constraintLessThanOrEqualToAnchor:self.bottomAnchor constant:-12],
+        // 关闭 autoresizing，启用 Auto Layout
+        self.titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        self.subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        self.arrowImageView.translatesAutoresizingMaskIntoConstraints = NO;
 
-        // arrowImageView: 靠右 + 垂直居中于 subtitleLabel
-        [self.arrowImageView.centerYAnchor constraintEqualToAnchor:self.titleLabel.centerYAnchor],
-        [self.arrowImageView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-16],
-        [self.arrowImageView.widthAnchor constraintEqualToConstant:16],
-        [self.arrowImageView.heightAnchor constraintEqualToConstant:16],
-    ]];
+        // 设置 Auto Layout 约束（统一使用 contentView）
+        [NSLayoutConstraint activateConstraints:@[
+            // titleLabel: 顶部 + 左对齐
+            [self.titleLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:12],
+            [self.titleLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:16],
+            [self.titleLabel.trailingAnchor constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor constant:-60],
+
+            // subtitleLabel: titleLabel 下方 + 左对齐
+            [self.subtitleLabel.topAnchor constraintEqualToAnchor:self.titleLabel.bottomAnchor constant:4],
+            [self.subtitleLabel.leadingAnchor constraintEqualToAnchor:self.titleLabel.leadingAnchor],
+            [self.subtitleLabel.trailingAnchor constraintLessThanOrEqualToAnchor:self.arrowImageView.leadingAnchor constant:-8],
+            [self.subtitleLabel.bottomAnchor constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor constant:-12],
+
+            // arrowImageView: 靠右 + 垂直居中于 titleLabel
+            [self.arrowImageView.centerYAnchor constraintEqualToAnchor:self.titleLabel.centerYAnchor],
+            [self.arrowImageView.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-16],
+            [self.arrowImageView.widthAnchor constraintEqualToConstant:10],
+            [self.arrowImageView.heightAnchor constraintEqualToConstant:16],
+        ]];
+    }
+
+    // 更新内容（避免在复用时重复设置约束/视图）
+    self.titleLabel.text = @"申请官方认证";
+    self.subtitleLabel.text = @"个人、企业机构的账号认证";
+    self.arrowImageView.tintColor = [UIColor tertiaryLabelColor];
+    self.arrowImageView.image = [UIImage systemImageNamed:@"chevron.right"];
 }
 
 #pragma mark - Lazy Load
@@ -78,7 +88,7 @@
 
 - (UIImageView *)arrowImageView {
     if (!_arrowImageView) {
-        _arrowImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"icon_setting_arrow_black"]];
+        _arrowImageView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"chevron.right"]];
         _arrowImageView.contentMode = UIViewContentModeScaleAspectFit;
         _arrowImageView.clipsToBounds = YES;
     }

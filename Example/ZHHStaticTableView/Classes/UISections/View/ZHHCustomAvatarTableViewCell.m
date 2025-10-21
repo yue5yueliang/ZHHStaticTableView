@@ -8,17 +8,25 @@
 
 #import "ZHHCustomAvatarTableViewCell.h"
 
+@interface ZHHCustomAvatarTableViewCell ()
+@property (nonatomic, assign) BOOL didSetupSubviews;
+@property (nonatomic, assign) BOOL didSetupConstraints;
+@end
+
 @implementation ZHHCustomAvatarTableViewCell
 
 - (void)configureCustomTableViewCellWithViewModel:(ZHHStaticTableviewCellViewModel *)viewModel {
     self.viewModel = viewModel;
     
-    // 添加子视图
-    [self.contentView addSubview:self.avatarImageView];
-    [self.contentView addSubview:self.userNameLabel];
-    [self.contentView addSubview:self.userIdLabel];
-    [self.contentView addSubview:self.avatarIndicatorImageView];
-    [self.contentView addSubview:self.codeImageView];
+    // 子视图：仅第一次添加
+    if (!self.didSetupSubviews) {
+        self.didSetupSubviews = YES;
+        [self.contentView addSubview:self.avatarImageView];
+        [self.contentView addSubview:self.userNameLabel];
+        [self.contentView addSubview:self.userIdLabel];
+        [self.contentView addSubview:self.avatarIndicatorImageView];
+        [self.contentView addSubview:self.codeImageView];
+    }
 
     // 关闭 autoresizing，启用 Auto Layout
     self.avatarImageView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -27,8 +35,10 @@
     self.avatarIndicatorImageView.translatesAutoresizingMaskIntoConstraints = NO;
     self.codeImageView.translatesAutoresizingMaskIntoConstraints = NO;
 
-    // 设置 Auto Layout 约束
-    [NSLayoutConstraint activateConstraints:@[
+    // 设置 Auto Layout 约束（每个实例只安装一次）
+    if (!self.didSetupConstraints) {
+        self.didSetupConstraints = YES;
+        [NSLayoutConstraint activateConstraints:@[
         // 头像约束
         [self.avatarImageView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:16],
         [self.avatarImageView.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
@@ -50,7 +60,8 @@
         // 二维码图标
         [self.codeImageView.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
         [self.codeImageView.trailingAnchor constraintEqualToAnchor:self.avatarIndicatorImageView.leadingAnchor constant:-10]
-    ]];
+        ]];
+    }
 }
 
 #pragma mark - Custom Cell
@@ -91,7 +102,7 @@
 /// 右侧箭头，指示可进入详情
 - (UIImageView *)avatarIndicatorImageView {
     if (!_avatarIndicatorImageView) {
-        _avatarIndicatorImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"icon_setting_arrow_black"]];
+        _avatarIndicatorImageView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"chevron.right"]];
     }
     return _avatarIndicatorImageView;
 }

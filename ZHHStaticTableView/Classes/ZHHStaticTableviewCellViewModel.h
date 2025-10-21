@@ -95,12 +95,18 @@ typedef void(^ZHHSwitchValueChagedBlock)(BOOL isOn);
 @property (nonatomic, assign) BOOL showRightOptionSwitch;
 /// 右侧箭头图标（默认显示）
 @property (nonatomic, strong, nullable) UIImage *rightArrowImage;
-/// 右侧箭头图标的大小（默认 8x14）
+/// 右侧箭头图标的大小（默认 10x16）
 @property (nonatomic, assign) CGSize rightArrowImageSize;
+/// 右侧箭头图标的颜色（默认使用系统语义化颜色）
+@property (nonatomic, strong) UIColor *rightArrowImageColor;
 
 /// 切换 Switch 开关时的回调 Block
 @property (nonatomic, copy) ZHHSwitchValueChagedBlock switchValueDidChangeBlock;
 
+#pragma mark - 箭头颜色更新
+
+/// 更新箭头颜色（当颜色改变时调用）
+- (void)updateArrowImageColor;
 
 #pragma mark ---- 自定义cell的数据放在这里 ----
 @property (nonatomic, strong) UIImage *avatarImage;

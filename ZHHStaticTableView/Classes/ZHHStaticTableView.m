@@ -79,11 +79,16 @@
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     ZHHStaticTableViewSectionViewModel *sectionViewModel = [self.zhh_dataSource tableView:tableView sectionViewModelInSection:section];
 
-    // **优化点 1：如果没有 header 文字或图片，直接返回 nil**
+    // 如果没有 header 文字或图片，直接返回 nil
     if (!sectionViewModel.sectionHeaderText.length && !sectionViewModel.sectionHeaderIconImage) {
         return nil;
     }
 
+    return [self createSectionHeaderViewWithViewModel:sectionViewModel];
+}
+
+/// 创建Section Header视图
+- (UIView *)createSectionHeaderViewWithViewModel:(ZHHStaticTableViewSectionViewModel *)sectionViewModel {
     UIView *sectionView = [[UIView alloc] init];
     UIStackView *stackView = [[UIStackView alloc] init];
     stackView.axis = UILayoutConstraintAxisHorizontal;
@@ -91,34 +96,27 @@
     stackView.spacing = 8;
     stackView.translatesAutoresizingMaskIntoConstraints = NO;
 
+    // 添加主标题
     if (sectionViewModel.sectionHeaderText.length) {
-        UILabel *headerTitleLabel = [[UILabel alloc] init];
-        headerTitleLabel.textColor = sectionViewModel.sectionHeaderTextColor;
-        headerTitleLabel.font = sectionViewModel.sectionHeaderTextFont;
-        headerTitleLabel.text = NSLocalizedString(sectionViewModel.sectionHeaderText, nil);
-        headerTitleLabel.numberOfLines = 0;
-        [headerTitleLabel sizeToFit];
+        UILabel *headerTitleLabel = [self createLabelWithText:sectionViewModel.sectionHeaderText
+                                                         font:sectionViewModel.sectionHeaderTextFont
+                                                        color:sectionViewModel.sectionHeaderTextColor];
         [stackView addArrangedSubview:headerTitleLabel];
     }
     
+    // 添加图标
     if (sectionViewModel.sectionHeaderIconImage) {
-        UIImageView *iconImageView = [[UIImageView alloc] initWithImage:sectionViewModel.sectionHeaderIconImage];
-        iconImageView.contentMode = UIViewContentModeScaleAspectFit;
-        [sectionView addSubview:iconImageView];
-        iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
-        [iconImageView.widthAnchor constraintEqualToConstant:sectionViewModel.sectionHeaderIconImageSize.width].active = YES;
-        [iconImageView.heightAnchor constraintEqualToConstant:sectionViewModel.sectionHeaderIconImageSize.height].active = YES;
+        UIImageView *iconImageView = [self createImageViewWithImage:sectionViewModel.sectionHeaderIconImage
+                                                               size:sectionViewModel.sectionHeaderIconImageSize];
         [stackView addArrangedSubview:iconImageView];
     }
     
+    // 添加副标题
     if (sectionViewModel.sectionHeaderSubText.length) {
-        UILabel *headerTitleLabel = [[UILabel alloc] init];
-        headerTitleLabel.textColor = sectionViewModel.sectionHeaderSubTextColor;
-        headerTitleLabel.font = sectionViewModel.sectionHeaderSubTextFont;
-        headerTitleLabel.text = NSLocalizedString(sectionViewModel.sectionHeaderSubText, nil);
-        headerTitleLabel.numberOfLines = 0;
-        [headerTitleLabel sizeToFit];
-        [stackView addArrangedSubview:headerTitleLabel];
+        UILabel *subTitleLabel = [self createLabelWithText:sectionViewModel.sectionHeaderSubText
+                                                      font:sectionViewModel.sectionHeaderSubTextFont
+                                                     color:sectionViewModel.sectionHeaderSubTextColor];
+        [stackView addArrangedSubview:subTitleLabel];
     }
 
     [sectionView addSubview:stackView];
@@ -139,25 +137,16 @@
         return [[UIView alloc] initWithFrame:CGRectZero];
     }
 
+    return [self createSectionFooterViewWithViewModel:sectionViewModel];
+}
+
+/// 创建Section Footer视图
+- (UIView *)createSectionFooterViewWithViewModel:(ZHHStaticTableViewSectionViewModel *)sectionViewModel {
     UIView *sectionView = [[UIView alloc] init];
 
-    UILabel *footerTitleLabel = [[UILabel alloc] init];
-    footerTitleLabel.textColor = sectionViewModel.sectionFooterTextColor;
-    footerTitleLabel.font = sectionViewModel.sectionFooterTextFont;
-    footerTitleLabel.numberOfLines = 0;
-
-    // 设置行间距
-    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-    paragraphStyle.lineSpacing = 3.0; // 你可以调整这个值来设置合适的行间距
-    paragraphStyle.alignment = NSTextAlignmentLeft;
-
-    NSDictionary *attributes = @{
-        NSParagraphStyleAttributeName: paragraphStyle,
-        NSFontAttributeName: sectionViewModel.sectionFooterTextFont,
-        NSForegroundColorAttributeName: sectionViewModel.sectionFooterTextColor
-    };
-
-    footerTitleLabel.attributedText = [[NSAttributedString alloc] initWithString:sectionViewModel.sectionFooterText attributes:attributes];
+    UILabel *footerTitleLabel = [self createAttributedLabelWithText:sectionViewModel.sectionFooterText
+                                                               font:sectionViewModel.sectionFooterTextFont
+                                                              color:sectionViewModel.sectionFooterTextColor];
 
     [sectionView addSubview:footerTitleLabel];
     footerTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -169,6 +158,49 @@
     ]];
 
     return sectionView;
+}
+
+#pragma mark - 公共创建方法
+
+/// 创建Label
+- (UILabel *)createLabelWithText:(NSString *)text font:(UIFont *)font color:(UIColor *)color {
+    UILabel *label = [[UILabel alloc] init];
+    label.textColor = color;
+    label.font = font;
+    label.text = NSLocalizedString(text, nil);
+    label.numberOfLines = 0;
+    [label sizeToFit];
+    return label;
+}
+
+/// 创建带行间距的Label
+- (UILabel *)createAttributedLabelWithText:(NSString *)text font:(UIFont *)font color:(UIColor *)color {
+    UILabel *label = [[UILabel alloc] init];
+    label.numberOfLines = 0;
+
+    // 设置行间距
+    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+    paragraphStyle.lineSpacing = 3.0;
+    paragraphStyle.alignment = NSTextAlignmentLeft;
+
+    NSDictionary *attributes = @{
+        NSParagraphStyleAttributeName: paragraphStyle,
+        NSFontAttributeName: font,
+        NSForegroundColorAttributeName: color
+    };
+
+    label.attributedText = [[NSAttributedString alloc] initWithString:text attributes:attributes];
+    return label;
+}
+
+/// 创建ImageView
+- (UIImageView *)createImageViewWithImage:(UIImage *)image size:(CGSize)size {
+    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
+    imageView.contentMode = UIViewContentModeScaleAspectFit;
+    imageView.translatesAutoresizingMaskIntoConstraints = NO;
+    [imageView.widthAnchor constraintEqualToConstant:size.width].active = YES;
+    [imageView.heightAnchor constraintEqualToConstant:size.height].active = YES;
+    return imageView;
 }
 
 #pragma mark - UITableView 选中 Cell 代理方法

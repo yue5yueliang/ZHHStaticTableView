@@ -20,6 +20,7 @@ FOUNDATION_EXPORT const unsigned char ZHHStaticTableViewVersionString[];
 #import <ZHHStaticTableView/ZHHStaticTableviewCellViewModel.h>
 #import <ZHHStaticTableView/ZHHStaticTableViewSectionViewModel.h>
 #import <ZHHStaticTableView/ZHHStaticTableViewCell.h>
+#import <ZHHStaticTableView/ZHHStaticTableViewConfig.h>
 
 #else
 
@@ -29,6 +30,7 @@ FOUNDATION_EXPORT const unsigned char ZHHStaticTableViewVersionString[];
 #import "ZHHStaticTableviewCellViewModel.h"
 #import "ZHHStaticTableViewSectionViewModel.h"
 #import "ZHHStaticTableViewCell.h"
+#import "ZHHStaticTableViewConfig.h"
 
 #endif
 

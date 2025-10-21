@@ -22,7 +22,8 @@
 - (instancetype)initWithDataSource:(NSArray *)dataSource {
     self = [super init];
     if (self) {
-        _dataSource = [dataSource copy]; // 赋值时使用 copy，保证数据安全性
+        // 赋值时使用 copy，保证数据安全性
+        _dataSource = [dataSource copy];
     }
     return self;
 }
@@ -34,13 +35,29 @@
 /// @param indexPath Cell 的索引
 /// @return 返回该 Cell 对应的 ViewModel
 - (ZHHStaticTableviewCellViewModel *)tableView:(UITableView *)tableView cellViewModelAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section < self.dataSource.count) {
-        ZHHStaticTableViewSectionViewModel *sectionViewModel = self.dataSource[indexPath.section];
-        if (indexPath.row < sectionViewModel.dataSource.count) {
-            return sectionViewModel.dataSource[indexPath.row];
-        }
+    // 添加边界检查
+    if (!indexPath || indexPath.section < 0 || indexPath.row < 0) {
+        NSLog(@"ZHHStaticTableView: Invalid indexPath: %@", indexPath);
+        return nil;
     }
-    return nil;
+    
+    if (indexPath.section >= self.dataSource.count) {
+        NSLog(@"ZHHStaticTableView: Section index %ld out of bounds (count: %lu)", (long)indexPath.section, (unsigned long)self.dataSource.count);
+        return nil;
+    }
+    
+    ZHHStaticTableViewSectionViewModel *sectionViewModel = self.dataSource[indexPath.section];
+    if (!sectionViewModel) {
+        NSLog(@"ZHHStaticTableView: SectionViewModel is nil at index %ld", (long)indexPath.section);
+        return nil;
+    }
+    
+    if (indexPath.row >= sectionViewModel.dataSource.count) {
+        NSLog(@"ZHHStaticTableView: Row index %ld out of bounds in section %ld (count: %lu)", (long)indexPath.row, (long)indexPath.section, (unsigned long)sectionViewModel.dataSource.count);
+        return nil;
+    }
+    
+    return sectionViewModel.dataSource[indexPath.row];
 }
 
 /// 获取指定 Section 的 ViewModel
@@ -48,10 +65,23 @@
 /// @param section 需要获取 ViewModel 的分区索引
 /// @return 返回该 Section 对应的 ViewModel
 - (ZHHStaticTableViewSectionViewModel *)tableView:(UITableView *)tableView sectionViewModelInSection:(NSInteger)section {
-    if (section < self.dataSource.count) {
-        return self.dataSource[section];
+    // 添加边界检查
+    if (section < 0) {
+        NSLog(@"ZHHStaticTableView: Invalid section index: %ld", (long)section);
+        return nil;
     }
-    return nil;
+    
+    if (section >= self.dataSource.count) {
+        NSLog(@"ZHHStaticTableView: Section index %ld out of bounds (count: %lu)", (long)section, (unsigned long)self.dataSource.count);
+        return nil;
+    }
+    
+    ZHHStaticTableViewSectionViewModel *sectionViewModel = self.dataSource[section];
+    if (!sectionViewModel) {
+        NSLog(@"ZHHStaticTableView: SectionViewModel is nil at index %ld", (long)section);
+    }
+    
+    return sectionViewModel;
 }
 
 #pragma mark - 🔹 UITableViewDataSource 协议方法
@@ -81,16 +111,38 @@
 /// @return 目标 Cell
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     // 防止越界
-    if (indexPath.section >= self.dataSource.count) return [[UITableViewCell alloc] init];
+    if (indexPath.section >= self.dataSource.count) {
+        NSLog(@"ZHHStaticTableView: Section index %ld out of bounds (count: %lu)", (long)indexPath.section, (unsigned long)self.dataSource.count);
+        return [[UITableViewCell alloc] init];
+    }
+    
     ZHHStaticTableViewSectionViewModel *sectionViewModel = self.dataSource[indexPath.section];
+    if (!sectionViewModel) {
+        NSLog(@"ZHHStaticTableView: SectionViewModel is nil at section %ld", (long)indexPath.section);
+        return [[UITableViewCell alloc] init];
+    }
 
-    if (indexPath.row >= sectionViewModel.dataSource.count) return [[UITableViewCell alloc] init];
+    if (indexPath.row >= sectionViewModel.dataSource.count) {
+        NSLog(@"ZHHStaticTableView: Row index %ld out of bounds in section %ld (count: %lu)", (long)indexPath.row, (long)indexPath.section, (unsigned long)sectionViewModel.dataSource.count);
+        return [[UITableViewCell alloc] init];
+    }
+    
     ZHHStaticTableviewCellViewModel *cellViewModel = sectionViewModel.dataSource[indexPath.row];
+    if (!cellViewModel) {
+        NSLog(@"ZHHStaticTableView: CellViewModel is nil at indexPath: %@", indexPath);
+        return [[UITableViewCell alloc] init];
+    }
 
     // 获取 Cell Class
     Class cellClass = NSClassFromString(cellViewModel.cellClassName);
-    if (!cellClass || ![cellClass isSubclassOfClass:[ZHHStaticTableViewCell class]]) {
-        return [[UITableViewCell alloc] init]; // 兜底返回
+    if (!cellClass) {
+        NSLog(@"ZHHStaticTableView: Cell class not found: %@", cellViewModel.cellClassName);
+        return [[UITableViewCell alloc] init];
+    }
+    
+    if (![cellClass isSubclassOfClass:[ZHHStaticTableViewCell class]]) {
+        NSLog(@"ZHHStaticTableView: Invalid cell class: %@, must be subclass of ZHHStaticTableViewCell", cellViewModel.cellClassName);
+        return [[UITableViewCell alloc] init];
     }
 
     // 获取可复用 Cell
@@ -99,14 +151,26 @@
 
     if (!cell) {
         cell = [[cellClass alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
+        if (!cell) {
+            NSLog(@"ZHHStaticTableView: Failed to create cell instance for class: %@", cellViewModel.cellClassName);
+            return [[UITableViewCell alloc] init];
+        }
     }
     
+    // 配置Cell
     if ([self.builder respondsToSelector:@selector(configureCell:viewModel:)]) {
         [self.builder configureCell:cell viewModel:cellViewModel];
+    } else {
+        NSLog(@"ZHHStaticTableView: Builder does not implement configureCell:viewModel: method");
     }
+    
     return cell;
 }
 
+/// 生成Cell的复用标识符
+/// @param viewModel Cell的ViewModel
+/// @param indexPath Cell的索引路径
+/// @return 复用标识符
 - (NSString *)finalCellIdentifier:(ZHHStaticTableviewCellViewModel *)viewModel indexPath:(NSIndexPath *)indexPath {
     switch (viewModel.cellType) {
         case ZHHStaticCellTypeCustom:
